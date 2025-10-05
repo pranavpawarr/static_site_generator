@@ -1,6 +1,6 @@
 import unittest
+from textnode import TextNode, InlineTextType, text_node_to_html_node
 
-from textnode import TextNode, InlineTextType
 
 class TestTextNode(unittest.TestCase):
 
@@ -37,6 +37,7 @@ class TestTextNode(unittest.TestCase):
         node1 = TextNode("Sample", InlineTextType.BOLD)
         node2 = TextNode("Sample", InlineTextType.ITALIC)
         self.assertNotEqual(node1, node2)
+
 
 if __name__ == "__main__":
     unittest.main()
