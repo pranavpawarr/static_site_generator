@@ -45,8 +45,11 @@ def generate_page(from_path, template_path, dest_path , basepath="/"):
 
     html_content = html_node.to_html()
 
-    final_html = template.replace("{{ Title }}", title)
-    final_html = final_html.replace("{{ Content }}", html_content)
+
+    final_html = final_html.replace('href="blog/', 'href="/blog/')
+    final_html = final_html.replace('href="contact', 'href="/contact')
+    final_html = final_html.replace('href="index.css', 'href="/index.css')
+    final_html = final_html.replace('src="images/', 'src="/images/')
 
     final_html = final_html.replace('href="/', f'href="{basepath}')
     final_html = final_html.replace('src="/', f'src="{basepath}')
@@ -61,32 +64,23 @@ def generate_page(from_path, template_path, dest_path , basepath="/"):
     
     print(f"Page generated successfully at {dest_path}")
 
-def generate_pages_recursively(dir_path_content, template_path, dest_dir_path):
+
+def generate_pages_recursively(dir_path_content, template_path, dest_dir_path, basepath="/"):
+    if not os.path.exists(dest_dir_path):
+        os.makedirs(dest_dir_path)
     for item in os.listdir(dir_path_content):
         item_path = os.path.join(dir_path_content, item)
-        
         if os.path.isfile(item_path) and item.endswith(".md"):
-            from_path = item_path
             dest_path = os.path.join(dest_dir_path, item.replace(".md", ".html"))
-            generate_page(from_path, template_path, dest_path)
+            generate_page(item_path, template_path, dest_path, basepath)
         elif os.path.isdir(item_path):
             new_dest_dir = os.path.join(dest_dir_path, item)
-            generate_pages_recursively(item_path, template_path, new_dest_dir)
-
-
+            generate_pages_recursively(item_path, template_path, new_dest_dir, basepath)
 
 def main():
     basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
-    print(f"Base path: {basepath}")
-    copy_static_to_public()
-    
-    generate_pages_recursively(
-        dir_path_content="content",
-        template_path="template.html",
-        dest_dir_path="docs"
-    )
-
-
+    copy_static_to_public(source="static", destination="docs")
+    generate_pages_recursively("content", "template.html", "docs", basepath)
 
 if __name__ == "__main__":
     main()
