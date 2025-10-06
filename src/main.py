@@ -38,18 +38,15 @@ def generate_page(from_path, template_path, dest_path):
     with open(template_path, "r") as f:
         template = f.read()
     
-    # markdown_to_html_node returns a ParentNode object
+
     html_node = markdown_to_html_node(markdown)
     title = extract_title(markdown)
 
-    # Convert the ParentNode to an HTML string
     html_content = html_node.to_html()
 
-    # Replace placeholders in template
     final_html = template.replace("{{ Title }}", title)
     final_html = final_html.replace("{{ Content }}", html_content)
 
-    # Create parent directories if needed
     dest_dir = os.path.dirname(dest_path)
     if dest_dir and not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
@@ -59,19 +56,29 @@ def generate_page(from_path, template_path, dest_path):
     
     print(f"Page generated successfully at {dest_path}")
 
+def generate_pages_recursively(dir_path_content, template_path, dest_dir_path):
+    for item in os.listdir(dir_path_content):
+        item_path = os.path.join(dir_path_content, item)
+        
+        if os.path.isfile(item_path) and item.endswith(".md"):
+            from_path = item_path
+            dest_path = os.path.join(dest_dir_path, item.replace(".md", ".html"))
+            generate_page(from_path, template_path, dest_path)
+        elif os.path.isdir(item_path):
+            new_dest_dir = os.path.join(dest_dir_path, item)
+            generate_pages_recursively(item_path, template_path, new_dest_dir)
+
+
+
 def main():
-    # Copy static files to public directory
+
     copy_static_to_public()
     
-    generate_page(
-        from_path="content/index.md",
+    generate_pages_recursively(
+        dir_path_content="content",
         template_path="template.html",
-        dest_path="public/index.html"
+        dest_dir_path="public"
     )
-
-    # Your existing test code
-    node = TextNode("This is some anchor text", InlineTextType.LINK, "https://www.boot.dev")
-    print(node)
 
 if __name__ == "__main__":
     main()
