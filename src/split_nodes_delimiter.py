@@ -1,46 +1,36 @@
+import re
+
 from textnode import TextNode, InlineTextType
 
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
-    """
-    Splits text nodes based on a delimiter and converts the delimited text to a specific type.
-    
-    Args:
-        old_nodes: List of TextNode objects to process
-        delimiter: String delimiter to split on (e.g., "**", "*", "`")
-        text_type: InlineTextType to assign to delimited text
-    
-    Returns:
-        List of TextNode objects with delimited sections split out
-    
-    Raises:
-        ValueError: If delimiter is not properly closed
-    """
     new_nodes = []
-    
-    for node in old_nodes:
-        # If node is not plain text, keep it as-is
-        if node.text_type != InlineTextType.PLAIN:
-            new_nodes.append(node)
+    for old_node in old_nodes:
+        if old_node.text_type != InlineTextType.PLAIN:
+            new_nodes.append(old_node)
             continue
-        
-        # Split the text by the delimiter
-        parts = node.text.split(delimiter)
-        
-        # Check if we have an even number of delimiters (must be closed)
-        if len(parts) % 2 == 0:
-            raise ValueError(f"Invalid markdown syntax: unclosed delimiter '{delimiter}'")
-        
-        # Process the parts
-        for i, part in enumerate(parts):
-            # Skip empty strings
-            if part == "":
+        split_nodes = []
+        sections = old_node.text.split(delimiter)
+        if len(sections) % 2 == 0:
+            raise ValueError("invalid markdown, formatted section not closed")
+        for i in range(len(sections)):
+            if sections[i] == "":
                 continue
-            
-            # Even indices are normal text, odd indices are delimited text
             if i % 2 == 0:
-                new_nodes.append(TextNode(part, InlineTextType.PLAIN))
+                split_nodes.append(TextNode(sections[i], InlineTextType.PLAIN))
             else:
-                new_nodes.append(TextNode(part, text_type))
-    
+                split_nodes.append(TextNode(sections[i], text_type))
+        new_nodes.extend(split_nodes)
     return new_nodes
+
+
+def extract_markdown_images(text):
+    pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
+    matches = re.findall(pattern, text)
+    return matches
+
+
+def extract_markdown_links(text):
+    pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
+    matches = re.findall(pattern, text)
+    return matches
