@@ -1,9 +1,10 @@
 import os
+import sys
 import shutil
 from textnode import TextNode,InlineTextType
 from markdown_to_blocks import markdown_to_html_node, extract_title
 
-def copy_static_to_public(source="static",destination="public"):
+def copy_static_to_public(source="static", destination="docs"):
     if os.path.exists(destination):
         print(f"Deleting existing directory: {destination}")
         shutil.rmtree(destination)
@@ -29,7 +30,7 @@ def copy_directory_recursive(source, destination):
             copy_directory_recursive(source_path, dest_path)
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path , basepath="/"):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     
     with open(from_path, "r") as f:
@@ -46,6 +47,10 @@ def generate_page(from_path, template_path, dest_path):
 
     final_html = template.replace("{{ Title }}", title)
     final_html = final_html.replace("{{ Content }}", html_content)
+
+    final_html = final_html.replace('href="/', f'href="{basepath}')
+    final_html = final_html.replace('src="/', f'src="{basepath}')
+
 
     dest_dir = os.path.dirname(dest_path)
     if dest_dir and not os.path.exists(dest_dir):
@@ -71,14 +76,17 @@ def generate_pages_recursively(dir_path_content, template_path, dest_dir_path):
 
 
 def main():
-
+    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
+    print(f"Base path: {basepath}")
     copy_static_to_public()
     
     generate_pages_recursively(
         dir_path_content="content",
         template_path="template.html",
-        dest_dir_path="public"
+        dest_dir_path="docs"
     )
+
+
 
 if __name__ == "__main__":
     main()
