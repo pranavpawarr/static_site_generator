@@ -1,7 +1,6 @@
 import os
 import sys
 import shutil
-from textnode import TextNode,InlineTextType
 from markdown_to_blocks import markdown_to_html_node, extract_title
 
 def copy_static_to_public(source="static", destination="docs"):
@@ -45,7 +44,6 @@ def generate_page(from_path, template_path, dest_path, basepath="/"):
     
     print("[before normalization]", final_html[:300])
     
-    # Normalize to root-first (handle both with and without trailing slashes)
     final_html = final_html.replace('href="blog/', 'href="/blog/')
     final_html = final_html.replace('href="contact"', 'href="/contact"')  # No trailing slash
     final_html = final_html.replace('href="contact/', 'href="/contact/')  # With trailing slash
@@ -54,7 +52,7 @@ def generate_page(from_path, template_path, dest_path, basepath="/"):
     
     print("[after normalization]", final_html[:300])
     
-    # Ensure basepath has proper format
+
     if not basepath.endswith("/"):
         basepath = basepath + "/"
     if not basepath.startswith("/"):
@@ -99,11 +97,11 @@ def generate_pages_recursively(dir_path_content, template_path, dest_dir_path, b
             new_dest_dir = os.path.join(dest_dir_path, item)
             generate_pages_recursively(item_path, template_path, new_dest_dir, basepath)
 def main():
-    # Default to GitHub Pages basepath if not provided
+
     if len(sys.argv) > 1:
         basepath = sys.argv[1]
     else:
-        basepath = "/static_site_generator/"  # Your repo name
+        basepath = "/static_site_generator/"  
     
     copy_static_to_public(source="static", destination="docs")
     generate_pages_recursively("content", "template.html", "docs", basepath)
