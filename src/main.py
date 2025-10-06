@@ -99,9 +99,15 @@ def generate_pages_recursively(dir_path_content, template_path, dest_dir_path, b
             new_dest_dir = os.path.join(dest_dir_path, item)
             generate_pages_recursively(item_path, template_path, new_dest_dir, basepath)
 def main():
-    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
+    # Default to GitHub Pages basepath if not provided
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+    else:
+        basepath = "/static_site_generator/"  # Your repo name
+    
     copy_static_to_public(source="static", destination="docs")
     generate_pages_recursively("content", "template.html", "docs", basepath)
+
 
 if __name__ == "__main__":
     main()
