@@ -1,5 +1,5 @@
 import unittest
-from markdown_to_blocks import markdown_to_blocks , block_to_block_type , BlockType
+from markdown_to_blocks import extract_title, markdown_to_blocks , block_to_block_type , BlockType
 
 
 class TestMarkdownToBlocks(unittest.TestCase):
@@ -169,6 +169,89 @@ class TestBlockToBlockType(unittest.TestCase):
         block = ""
         self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
 
+
+class TestExtractTitle(unittest.TestCase):
+    
+    def test_simple_h1(self):
+        """Test extracting a simple h1 header"""
+        result = extract_title("# Hello")
+        self.assertEqual(result, "Hello")
+    
+    def test_h1_with_leading_whitespace(self):
+        """Test h1 with leading whitespace in the line"""
+        result = extract_title("   # Welcome")
+        self.assertEqual(result, "Welcome")
+    
+    def test_h1_with_trailing_whitespace(self):
+        """Test h1 with trailing whitespace after the text"""
+        result = extract_title("# My Title   ")
+        self.assertEqual(result, "My Title")
+    
+    def test_h1_with_both_leading_and_trailing_whitespace(self):
+        """Test h1 with whitespace on both sides"""
+        result = extract_title("   # My Title   ")
+        self.assertEqual(result, "My Title")
+    
+    def test_h1_with_multiple_words(self):
+        """Test h1 with multiple words"""
+        result = extract_title("# This is a Long Title")
+        self.assertEqual(result, "This is a Long Title")
+    
+    def test_h1_in_multiline_markdown(self):
+        """Test extracting h1 from markdown with multiple lines"""
+        markdown = """Some text
+# Main Title
+## Subtitle
+More content"""
+        result = extract_title(markdown)
+        self.assertEqual(result, "Main Title")
+    
+    def test_h1_not_first_line(self):
+        """Test h1 that's not on the first line"""
+        markdown = """Paragraph text
+
+# Title Here
+
+More text"""
+        result = extract_title(markdown)
+        self.assertEqual(result, "Title Here")
+    
+    def test_no_h1_raises_exception(self):
+        """Test that missing h1 raises an exception"""
+        with self.assertRaises(Exception) as context:
+            extract_title("## Only h2 headers here")
+        self.assertEqual(str(context.exception), "No h1 header found in markdown")
+    
+    def test_only_h2_raises_exception(self):
+        """Test that only h2 headers raises an exception"""
+        markdown = """## Header 2
+### Header 3
+#### Header 4"""
+        with self.assertRaises(Exception):
+            extract_title(markdown)
+    
+    def test_empty_markdown_raises_exception(self):
+        """Test that empty markdown raises an exception"""
+        with self.assertRaises(Exception):
+            extract_title("")
+    
+    def test_no_headers_raises_exception(self):
+        """Test that markdown without any headers raises an exception"""
+        with self.assertRaises(Exception):
+            extract_title("Just some plain text without any headers")
+    
+    def test_h1_with_extra_spaces_after_hash(self):
+        """Test h1 with multiple spaces after the #"""
+        result = extract_title("#    Title with Spaces")
+        self.assertEqual(result, "Title with Spaces")
+    
+    def test_first_h1_is_returned(self):
+        """Test that the first h1 is returned when multiple exist"""
+        markdown = """# First Title
+Some content
+# Second Title"""
+        result = extract_title(markdown)
+        self.assertEqual(result, "First Title")
 
 if __name__ == "__main__":
     unittest.main()
